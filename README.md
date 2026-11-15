@@ -45,7 +45,7 @@ Comment une transaction Bitcoin mobilise-t-elle des sorties non dépensées (UTX
 
 ## 6. Auteur
 
-- Nom et prénom : à compléter
+- Nom et prénom : zineb es-skali
 - Filière : Master d'Excellence Finance Appliquée – Option FinTech
 - Module : Blockchain
 
