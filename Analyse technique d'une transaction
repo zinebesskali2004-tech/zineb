@@ -1,165 +1,71 @@
-# Analyse technique d'une transaction Bitcoin sur TestNet4
-Nom et Prénom : Zineb Es-skali
-## 1. Fiche d'identification
-
-| Champ | Valeur |
-|---|---|
-| Réseau | Bitcoin TestNet4 |
-| TXID | `0cd9b95e8af8a639e7d7c243f039699a66a898b1877b9915ac78dd06f7e97962` |
-| Explorateur | [Mempool.space – ouvrir la transaction](https://mempool.space/testnet4/tx/0cd9b95e8af8a639e7d7c243f039699a66a898b1877b9915ac78dd06f7e97962) |
-| Date et heure de consultation | À compléter |
-| Statut observé | À vérifier |
-| Hauteur du bloc | À compléter si confirmée |
-
-## 2. Objectif et problématique
-
-L'objectif est d'examiner la structure d'une transaction Bitcoin et d'expliquer comment elle consomme des sorties non dépensées (*Unspent Transaction Outputs*, UTXO) pour créer de nouvelles sorties.
-
-**Problématique :** comment les entrées, les sorties et les frais permettent-ils de représenter un transfert de valeur dans le système Bitcoin ?
-
-## 3. Relevé des données observables
-
-Compléter ce tableau directement à partir de l'explorateur. Ne pas estimer les valeurs manquantes.
-
-| Indicateur | Valeur à relever | Unité / remarque |
-|---|---:|---|
-| Nombre d'entrées | À compléter | inputs |
-| Nombre de sorties | À compléter | outputs |
-| Somme des entrées | À compléter | BTC ou satoshis |
-| Somme des sorties | À compléter | BTC ou satoshis |
-| Frais de transaction | À compléter | satoshis |
-| Taille virtuelle | À compléter | vB, si affichée |
-| Poids | À compléter | WU, si affiché |
-| Taux de frais | À compléter | sat/vB, si affiché |
-| Confirmations | À compléter | nombre au moment de la consultation |
-| Bloc | À compléter si confirmé | hauteur |
-
-**Moment de la vérification :** les confirmations et le statut peuvent évoluer. Indiquer la date et l'heure auxquelles les données ont été relevées.
-
-## 4. Comprendre les entrées (Inputs)
-
-Une entrée référence une sortie d'une transaction antérieure. Cette sortie antérieure doit être disponible et non dépensée au moment où la transaction est validée.
-
-Pour chaque entrée, relever si l'explorateur les présente :
-- le TXID de la transaction précédente ;
-- l'index de sortie (*vout*) référencé ;
-- le montant de la sortie consommée ;
-- les informations de script ou d'adresse disponibles.
-
-**Interprétation :** les entrées ne sont pas simplement des adresses qui envoient un solde. Elles désignent des sorties antérieures précises que la nouvelle transaction consomme.
-
-## 5. Comprendre les sorties (Outputs)
-
-Une sortie définit un montant et les conditions de dépense associées, généralement représentées par un script de verrouillage.
-
-Pour chaque sortie, relever :
-- l'index de sortie (*vout*) ;
-- le montant ;
-- l'adresse, si l'explorateur en affiche une ;
-- le statut dépensé / non dépensé, si disponible.
-
-Une sortie non dépensée constitue un UTXO qui pourra être référencé comme entrée d'une transaction future.
-
-## 6. Modèle UTXO : lecture économique et technique
-
-Le modèle UTXO fonctionne selon le principe suivant :
-
-1. une transaction antérieure crée une ou plusieurs sorties ;
-2. une nouvelle transaction référence certaines sorties encore non dépensées ;
-3. ces sorties sont consommées comme entrées ;
-4. la nouvelle transaction crée ses propres sorties ;
-5. ces nouvelles sorties pourront être dépensées ultérieurement.
-
-Le solde contrôlé par un portefeuille correspond à la somme des UTXO qu'il peut dépenser, et non à un chiffre unique stocké dans la blockchain comme dans un compte bancaire traditionnel.
-
-### Schéma conceptuel
-
-```text
-Transactions précédentes
-       |          |
-     UTXO 1     UTXO 2
-       \          /
-        \        /
-      Transaction étudiée
-              |
-        +-----+------+
-        |            |
-      UTXO A       UTXO B
-   nouvelle sortie nouvelle sortie
+# Analyse Détaillée d'une Transaction Bitcoin TestNet4
+* **Réalisé par :** Zineb Es-skali (Apogée : 2436536)
+* **Réseau :** Bitcoin TestNet4
+* **Identifiant de la transaction (TxID) :** `0cd9b95e8af8a639e7d7c243f039699a66a898b1877b9915ac78dd06f7e97962`
+---
+## 1. Vue d'Ensemble et Statut de Confirmation
+D'après les données extraites de l'explorateur **Mempool.space**, voici les informations générales de cette transaction :
+| Caractéristique | Valeur observée | Explication technique |
+| :--- | :--- | :--- |
+| **Horodatage** | `2026-10-25 02:52:43` | Date et heure d'inclusion dans un bloc miné. |
+| **Confirmations** | `3 934 confirmations` | Transaction définitivement ancrée et immuable dans la blockchain. |
+| **Version** | `2` | Format standard supportant les fonctionnalités modernes (comme RBF). |
+| **Temps de verrouillage** | `157 469` | *Locktime* : hauteur de bloc à partir de laquelle la transaction est valide. |
+| **Fonctionnalités** | `SegWit`, `Taproot`, `RBF` | Technologies actives optimisant le coût, la confidentialité et la flexibilité. |
+---
+## 2. Schéma Explicatif du Flux UTXO
+Le schéma ci-dessous illustre comment l'UTXO d'entrée est consommé et divisé en deux nouvelles sorties (paiement destinataire et retour de monnaie), ainsi que le prélèvement des frais de minage :
+```mermaid
+graph LR
+    subgraph Entrée [Entrée / Input UTXO]
+        IN["Adresse: tb1pk9...xqzrear7<br/>Montant: 27,37506843 tBTC<br/>Type: V1_P2TR (Taproot)<br/>Preuve: Témoin Schnorr"]
+    end
+    subgraph TX [Transaction Bitcoin TestNet4]
+        NODE(("TxID:<br/>0cd9b9...e97962"))
+    end
+    subgraph Sorties [Sorties / Outputs & Frais]
+        OUT1["Sortie 0 (Destinataire)<br/>Adresse: tb1p...zq24c6xv<br/>Montant: 0,00309488 tBTC<br/>Type: V1_P2TR"]
+        OUT2["Sortie 1 (Change / Monnaie)<br/>Adresse: tb1...fs3e65my<br/>Montant: 27,37197198 tBTC<br/>Type: V1_P2TR"]
+        FEE["Frais de transaction (Mineur)<br/>Montant: 157 satoshis<br/>(0,00000157 tBTC | 1,02 sat/vB)"]
+    end
+    IN --> NODE
+    NODE --> OUT1
+    NODE --> OUT2
+    NODE -.-> FEE
 ```
-
-Ce schéma illustre le modèle général. Il ne représente pas le nombre réel d'entrées ou de sorties de la transaction étudiée ; celui-ci doit être relevé dans l'explorateur.
-
-## 7. Vérification des frais
-
-Pour une transaction Bitcoin ordinaire, la relation de conservation de valeur s'écrit :
-
-**Frais = Somme des entrées − Somme des sorties**
-
-En satoshis :
-
-- Somme des entrées : **[à compléter] sat**
-- Somme des sorties : **[à compléter] sat**
-- Frais calculés : **[à compléter] sat**
-- Frais affichés : **[à compléter] sat**
-
-Comparer le résultat calculé avec les frais indiqués par l'explorateur. Un écart peut provenir d'une erreur de relevé ou de conversion entre BTC et satoshis.
-
-Rappel : **1 BTC = 100 000 000 satoshis**.
-
-Les frais sont associés à la transaction et incitent les mineurs à inclure celle-ci dans un bloc. Ils ne constituent pas une sortie ordinaire vers le destinataire du paiement.
-
-## 8. Taille et taux de frais
-
-Lorsque les informations sont disponibles, relever la taille virtuelle (*virtual size*, vB) et le taux de frais.
-
-**Taux de frais (sat/vB) = Frais (sat) ÷ Taille virtuelle (vB)**
-
-Le taux de frais aide à comprendre la priorité relative proposée pour l'inclusion dans un bloc. Il ne faut pas confondre :
-- le montant total des frais, exprimé en satoshis ;
-- le taux de frais, exprimé en sat/vB.
-
-Ne compléter cette partie qu'avec les données effectivement affichées.
-
-## 9. Confirmation et inclusion dans un bloc
-
-Une transaction diffusée peut être en attente dans la mempool. Lorsqu'elle est incluse dans un bloc accepté par le réseau, elle obtient une première confirmation. Les blocs ajoutés ensuite augmentent le nombre de confirmations.
-
-À relever :
-- statut au moment de la consultation ;
-- nombre de confirmations ;
-- hauteur du bloc, si confirmée ;
-- date/heure du bloc, si affichée.
-
-Le statut doit être daté, car il peut changer après la consultation.
-
-## 10. Interprétation des résultats
-
-Après avoir rempli le tableau de la section 3, rédiger une interprétation répondant aux questions suivantes :
-
-1. Combien d'UTXO antérieurs la transaction consomme-t-elle ?
-2. Combien de nouvelles sorties crée-t-elle ?
-3. Les montants des entrées et sorties permettent-ils de retrouver les frais affichés ?
-4. La transaction est-elle confirmée au moment de l'observation ?
-5. Que peut-on conclure sur le rôle des UTXO dans cette transaction ?
-
-**Résultat de l'analyse :** à rédiger après le relevé réel des données. Ne pas conclure sur des montants, des adresses ou des confirmations qui n'ont pas été vérifiés.
-
-## 11. Limites de l'analyse
-
-- Les informations de statut et de confirmation dépendent du moment de consultation.
-- Certaines adresses ou certains scripts ne sont pas nécessairement présentés sous une forme lisible.
-- L'analyse d'une seule transaction ne permet pas de généraliser à toutes les transactions Bitcoin.
-- Les données doivent être relevées sur le réseau TestNet4 et ne doivent pas être confondues avec celles du réseau principal.
-
-## 12. Conclusion
-
-Cette étude présente les mécanismes essentiels d'une transaction Bitcoin : références aux UTXO antérieurs, création de nouvelles sorties, calcul des frais et confirmation par inclusion dans un bloc. L'explorateur permet de rendre ces éléments vérifiables publiquement.
-
-La conclusion spécifique à la transaction étudiée devra être finalisée après la saisie des données observées dans le tableau de la section 3.
-
-## 13. Références
-
-- [Transaction étudiée – Mempool.space TestNet4](https://mempool.space/testnet4/tx/0cd9b95e8af8a639e7d7c243f039699a66a898b1877b9915ac78dd06f7e97962)
-- [Documentation REST de Mempool.space – TestNet4](https://mempool.space/testnet4/docs/api/rest)
-- Consignes pédagogiques du TP3 : *GitHub et projets blockchain*.
+> **Note visuelle :** L'illustration complète générée pour cette analyse peut également être consultée via l'image jointe dans le dépôt (`schema_transaction.jpg`).
+---
+## 3. Analyse Technique : Poids, Taille et Frais
+Le coût d'une transaction Bitcoin ne dépend pas du montant transféré, mais de l'espace qu'elle occupe dans un bloc :
+* **Taille brute (Size) :** `205 B` (octets)
+* **Taille virtuelle (Virtual Size) :** `154 vB` (octets virtuels, réduite grâce à la remise SegWit)
+* **Poids (Weight) :** `616 WU` (*Weight Units*)
+* **Frais totaux (Fees) :** `157 satoshis` (`0,00000157 tBTC`)
+* **Taux de frais (Fee Rate) :** `1,02 sat/vB` (statut *Optimal* sur TestNet4)
+> **Remarque :** L'activation du **RBF (Replace-By-Fee)** via le champ `nSequence` (`0xfffffffd`) permettait à l'émetteur d'augmenter les frais si la transaction était restée bloquée dans la mempool.
+---
+## 4. Mécanisme UTXO : Entrées et Sorties
+Bitcoin fonctionne selon le modèle **UTXO** (*Unspent Transaction Output*). Une entrée est entièrement consommée pour créer de nouvelles sorties.
+### A. Entrée (Input)
+* **Adresse source :** `tb1pk9...xqzrear7`
+* **Montant engagé :** `27,37506843 tBTC`
+* **Type de script :** `V1_P2TR` (Pay-to-Taproot)
+* **Preuve cryptographique :** Présence d'un **Témoin (Witness)** contenant la signature Schnorr permettant de déverrouiller les fonds.
+### B. Sorties (Outputs)
+La transaction divise l'UTXO d'entrée en deux nouvelles sorties Taproot (`V1_P2TR`) :
+1. **Sortie 1 (Paiement / Destinataire) :**
+   * **Adresse :** `tb1p...zq24c6xv`
+   * **Montant :** `0,00309488 tBTC` (correspondant au transfert effectué vers le portefeuille destinataire).
+   * **ScriptPubKey (ASM) :** `OP_PUSHNUM_1 OP_PUSHBYTES_32 8e674fd930569d8f284f6afe6dad18ca395df925e279a0cbc171b0e371793244`
+2. **Sortie 2 (Rendu de monnaie / Change) :**
+   * **Adresse :** `tb1...fs3e65my`
+   * **Montant :** `27,37197198 tBTC` (le reste des fonds renvoyé automatiquement vers une adresse de change de l'émetteur).
+   * **ScriptPubKey (ASM) :** `OP_PUSHNUM_1 OP_PUSHBYTES_32 69aacb9ab7b4e4683fd71c08b0224befc85447d361ce115fda3589a4e28e1393`
+---
+## 5. Vérification Mathématique de la Transaction
+Sur Bitcoin, la différence entre la somme des entrées et la somme des sorties correspond exactement aux frais versés au mineur :
+$$\text{Frais} = \text{Total Entrées} - \text{Total Sorties}$$
+* **Total Entrées :** $27,37506843 \text{ tBTC}$
+* **Total Sorties :** $0,00309488 + 27,37197198 = 27,37506686 \text{ tBTC}$
+* **Différence (Frais) :** $27,37506843 - 27,37506686 = 0,00000157 \text{ tBTC} = 157 \text{ satoshis}$
+Le calcul est exact au satoshi près.
